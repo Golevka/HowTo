@@ -1,0 +1,60 @@
+#! /usr/bin/perl
+
+use strict;
+use warnings;
+use utf8;
+use LWP::UserAgent;
+
+binmode STDOUT, ':utf8';
+
+
+my $ua = LWP::UserAgent->new(agent => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2)");
+$ua->timeout(10);
+$ua->env_proxy;
+
+
+sub get_html {
+    my ($ua, $url, $diemsg) = @_;
+    my $res = $ua->get($url);
+    $res->is_success or die $diemsg . ": " . $res->status_line;
+    return $res->decoded_content;
+}
+
+sub search_kw_with_google {
+    my ($ua, $kw) = @_;
+    $kw =~ s/ /%20/g;
+    my $google_url = "http://www.google.com/search?q=site:stackoverflow.com%20" . $kw;
+    return get_html($ua, $google_url, "cannot fetch search result from google");
+}
+
+sub get_code_from_stackoverflow {
+    my ($ua, $url) = @_;
+    my $page = get_html($ua, $url, "cannot fetch page from stackoverflow");
+
+    my @code = ();
+    $page =~ /<td class="answercell">/g or die "No answer found\n";
+    while ($page =~ /<pre><code>(.*?)<\/code><\/pre>/msg) {
+	my $answer = $1;
+	$answer =~ s/&lt;/</g;
+	$answer =~ s/&gt;/>/g;
+	push @code, $answer;
+    }
+
+    return @code;
+}
+
+
+# Google for answers on stackoverflow
+my $question = join ' ', @ARGV;
+my $search_result = search_kw_with_google($ua, $question);
+
+# Get the first link
+my $stackoverflow_url = (
+    ($search_result =~ m{=(http://stackoverflow\.com/questions/\d+/(.*?))&})?
+	$1: die "No topics found\n");
+
+print "stackoverflow URL: ", $stackoverflow_url, "\n\n";
+
+# Grab all code fragments in the stackoverflow page
+my @res_code = get_code_from_stackoverflow($ua, $stackoverflow_url);
+printf "Answer %d:\n%s\n", $_, $res_code[$_] foreach (0 .. $#res_code);

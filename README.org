@@ -1,0 +1,59 @@
+* HowTo - A Code Search Tool
+
+This tool is a Perl version of gleitz's howdoi (see
+https://github.com/gleitz/howdoi). Just type your question right after *howto* to
+fetch useful code fragments from stackoverflow.
+
+** Example 1: How to format string in bash
+#+BEGIN_SRC shell
+$ ./howto format string bash
+stackoverflow URL: http://stackoverflow.com/questions/9832393/how-to-bash-script-format-unix-time-to-string
+
+Answer 0:
+[foo@bar ~]$date --date "2012-02-13" +%s
+1329055200
+[foo@bar ~]$date --date @1329055200
+Mon Feb 13 00:00:00 EST 2012
+[foo@bar ~]$date --date @1329055200 +"%Y-%m-%d"
+2012-02-13
+
+Answer 1:
+[ghoti@pc ~]$ date -r 1332468005 '+%Y-%m-%d %T'
+2012-03-22 22:00:05
+
+Answer 2:
+ghoti@wopr$ date -d @1332468005 '+%Y-%m-%d %H:%M:%S'
+2012-03-22 22:00:05
+
+Answer 3:
+ghoti@wopr$ gawk -v when=1332468005 'BEGIN{ print strftime("%Y-%m-%d %T", when); }'
+2012-03-22 22:00:05
+
+Answer 4:
+$  date --date "2012-02-13" +%s | awk '{ print strftime("%Y-%m-%d", $1); }'
+2012-02-13
+
+Answer 5:
+$ date --date "2012-02-13" +%s
+1329062400
+$ date --date=@1329062400 +%F
+2012-02-13
+#+END_SRC
+
+** Example 2: How to print stack trace in python
+#+BEGIN_SRC shell
+$ ./howto print stack trace python
+stackoverflow URL: http://stackoverflow.com/questions/7901238/javas-printstacktrace-equivalent-in-python
+
+Answer 0:
+import traceback
+
+try:
+    1/0
+except:
+    print '>>> traceback <<<'
+    traceback.print_exc()
+    print '>>> end of traceback <<<'
+
+~/Documents/github/HowTo $ 
+#+END_SRC
